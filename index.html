@@ -78,42 +78,97 @@
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
+
+        .intro-card {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            margin: 50px auto;
+            max-width: 600px;
+        }
+
+        .intro-text {
+            margin: 30px 0;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        .intro-text p {
+            margin: 15px 0;
+        }
+
+        .start-btn {
+            background-color: #1DA1F2;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background-color 0.3s;
+        }
+
+        .start-btn:hover {
+            background-color: #1a91da;
+        }
     </style>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </head>
 <body>
     <div class="container">
-        <div class="timer" id="timer">20</div>
-        <div id="quiz-container">
-            <div class="question-card">
-                <h2 id="question"></h2>
-                <div class="options" id="options"></div>
+        <div id="intro-container">
+            <div class="intro-card">
+                <h1>Twitter Kullanma Testi</h1>
+                <div class="intro-text">
+                    <p>⚠️ Bu parodi amaçlı bir testtir.</p>
+                    <p>⏱️ Her soru 20 saniyedir.</p>
+                    <p>🎯 Bir oyuncunun bir hakkı vardır.</p>
+                </div>
+                <button onclick="startQuiz()" class="start-btn">Hazırsan Başlayalım!</button>
             </div>
         </div>
-        
-        <div id="result-container" style="display: none; text-align: center;">
-            <div id="capture-area">
-                <h1>Soru Yarışması Sonucum</h1>
-                <h2>Toplam Doğru Sayım: <span id="correct-answers">0</span>/12</h2>
-                <h3 id="message" style="color: #2c3e50; margin: 20px 0;"></h3>
+
+        <div id="quiz-content" style="display: none;">
+            <div class="timer" id="timer">20</div>
+            <div id="quiz-container">
+                <div class="question-card">
+                    <h2 id="question"></h2>
+                    <div class="options" id="options"></div>
+                </div>
             </div>
-            <div class="button-group" style="margin-top: 20px;">
-                <button onclick="shareOnTwitter()" class="share-btn">Twitter'da Paylaş</button>
+            
+            <div id="result-container" style="display: none; text-align: center;">
+                <div id="capture-area">
+                    <h1>Soru Yarışması Sonucum</h1>
+                    <h2>Toplam Doğru Sayım: <span id="correct-answers">0</span>/12</h2>
+                    <h3 id="message" style="color: #2c3e50; margin: 20px 0;"></h3>
+                </div>
+                <div class="button-group" style="margin-top: 20px;">
+                    <button onclick="shareOnTwitter()" class="share-btn">Twitter'da Paylaş</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Oyun başlangıcında kontrol ekleyelim
         if (localStorage.getItem('hasPlayed')) {
-            document.getElementById('quiz-container').style.display = 'none';
-            document.getElementById('timer').style.display = 'none';
+            document.getElementById('intro-container').style.display = 'none';
             document.body.innerHTML = `
                 <div class="container" style="text-align: center; padding: 50px;">
                     <h2>Bu testi daha önce çözdünüz!</h2>
                     <p>Her kullanıcı testi sadece bir kez çözebilir.</p>
                 </div>
             `;
+        }
+
+        function startQuiz() {
+            document.getElementById('intro-container').style.display = 'none';
+            document.getElementById('quiz-content').style.display = 'block';
+            // Quiz'i başlat
+            showQuestion();
+            startTimer();
         }
 
         let questions = [];
@@ -123,7 +178,7 @@
         let score = 0;
         let correctAnswers = 0;
 
-        // Soruları JSON dosyasından yükle
+    
         fetch('questions.json')
             .then(response => response.json())
             .then(data => {
@@ -201,31 +256,31 @@
             document.getElementById('result-container').style.display = 'block';
             document.getElementById('correct-answers').textContent = correctAnswers;
             
-            // Sonuç mesajını göster
+            
             const message = getResultMessage(correctAnswers);
             document.getElementById('message').textContent = message;
 
-            // Oyunu oynadığını kaydet
+            
             localStorage.setItem('hasPlayed', 'true');
         }
 
         function shareOnTwitter() {
             html2canvas(document.getElementById('capture-area')).then(function(canvas) {
-                // Canvas'ı base64 formatına çevir
+            
                 const image = canvas.toDataURL('image/png');
                 
-                // Yeni bir sekme aç ve resmi göster
+            
                 const newTab = window.open();
                 newTab.document.body.innerHTML = `
                     <img src="${image}" alt="Quiz Result">
                     <p>Resmi kaydedin ve Twitter'da paylaşabilirsiniz!</p>
                 `;
 
-                // Twitter paylaşım linki
+    
                 const tweetText = `Soru yarışmasında ${correctAnswers} doğru yaptım! Siz de test edin: https://fsk.github.io/twitter-kullanma-testi`;
                 const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
                 
-                // Twitter paylaşım sayfasını aç
+            
                 window.open(twitterUrl, '_blank');
             });
         }
