@@ -120,7 +120,7 @@
     <div class="container">
         <div id="intro-container">
             <div class="intro-card">
-                <h1>Twitter Kullanma Testi</h1>
+                <h1>2025'te Twitter Kullanımı İzin Testi</h1>
                 <div class="intro-text">
                     <p>⚠️ Bu parodi amaçlı bir testtir.</p>
                     <p>⏱️ Her soru 20 saniyedir.</p>
@@ -140,37 +140,15 @@
             </div>
             
             <div id="result-container" style="display: none; text-align: center;">
-                <div id="capture-area">
-                    <h1>Soru Yarışması Sonucum</h1>
-                    <h2>Toplam Doğru Sayım: <span id="correct-answers">0</span>/12</h2>
-                    <h3 id="message" style="color: #2c3e50; margin: 20px 0;"></h3>
-                </div>
-                <div class="button-group" style="margin-top: 20px;">
-                    <button onclick="shareOnTwitter()" class="share-btn">Twitter'da Paylaş</button>
-                </div>
+                <h1>2025'te Twitter Kullanma İznim</h1>
+                <h2>Toplam Doğru Sayım: <span id="correct-answers">0</span>/12</h2>
+                <h3 id="message" style="color: #2c3e50; margin: 20px 0;"></h3>
+                <button onclick="shareOnTwitter()" class="share-btn">Twitter'da Paylaş</button>
             </div>
         </div>
     </div>
 
     <script>
-        if (localStorage.getItem('hasPlayed')) {
-            document.getElementById('intro-container').style.display = 'none';
-            document.body.innerHTML = `
-                <div class="container" style="text-align: center; padding: 50px;">
-                    <h2>Bu testi daha önce çözdünüz!</h2>
-                    <p>Her kullanıcı testi sadece bir kez çözebilir.</p>
-                </div>
-            `;
-        }
-
-        function startQuiz() {
-            document.getElementById('intro-container').style.display = 'none';
-            document.getElementById('quiz-content').style.display = 'block';
-            // Quiz'i başlat
-            showQuestion();
-            startTimer();
-        }
-
         let questions = [];
         let currentQuestion = 0;
         let timer;
@@ -178,14 +156,18 @@
         let score = 0;
         let correctAnswers = 0;
 
-    
         fetch('questions.json')
             .then(response => response.json())
             .then(data => {
                 questions = data.questions;
-                showQuestion();
-                startTimer();
             });
+
+        function startQuiz() {
+            document.getElementById('intro-container').style.display = 'none';
+            document.getElementById('quiz-content').style.display = 'block';
+            showQuestion();
+            startTimer();
+        }
 
         function showQuestion() {
             if (currentQuestion >= questions.length) {
@@ -224,10 +206,16 @@
 
         function checkAnswer(selectedOption) {
             const correctAnswer = questions[currentQuestion].answer;
+            console.log(`Soru ${currentQuestion + 1}:`);
+            console.log(`Seçilen cevap: ${selectedOption}`);
+            console.log(`Doğru cevap: ${correctAnswer}`);
+            console.log(`Eşleşme: ${selectedOption === correctAnswer}`);
+            
             if (selectedOption === correctAnswer) {
                 score += timeLeft;
                 correctAnswers++;
             }
+            console.log(`Toplam doğru sayısı: ${correctAnswers}`);
             nextQuestion();
         }
 
@@ -256,33 +244,15 @@
             document.getElementById('result-container').style.display = 'block';
             document.getElementById('correct-answers').textContent = correctAnswers;
             
-            
             const message = getResultMessage(correctAnswers);
             document.getElementById('message').textContent = message;
-
-            
-            localStorage.setItem('hasPlayed', 'true');
         }
 
         function shareOnTwitter() {
-            html2canvas(document.getElementById('capture-area')).then(function(canvas) {
-            
-                const image = canvas.toDataURL('image/png');
-                
-            
-                const newTab = window.open();
-                newTab.document.body.innerHTML = `
-                    <img src="${image}" alt="Quiz Result">
-                    <p>Resmi kaydedin ve Twitter'da paylaşabilirsiniz!</p>
-                `;
-
-    
-                const tweetText = `Soru yarışmasında ${correctAnswers} doğru yaptım! Siz de test edin: https://fsk.github.io/twitter-kullanma-testi`;
-                const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
-                
-            
-                window.open(twitterUrl, '_blank');
-            });
+            const message = document.getElementById('message').textContent;
+            const tweetText = `2025'te Twitter Kullanma İzin Testinde ${correctAnswers}/12 doğru yaptım!\n${message}\n\nSiz de test edin: https://fsk.github.io/twitter-kullanma-testi`;
+            const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+            window.open(twitterUrl, '_blank');
         }
     </script>
 </body>
