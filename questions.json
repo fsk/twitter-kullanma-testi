@@ -33,7 +33,7 @@
         {
             "question": "Türkiye'deki en uzun nehir hangisidir?",
             "options": ["Kızılırmak", "Ergene", "Kırıkkale", "Yeşilırmak"],
-            "answer": "Yeşilırmak"
+            "answer": "Kızılırmak"
         },
         {
             "question": "10x10/10-10 işleminin sonucu kaçtır?",
@@ -57,7 +57,8 @@
         },
         {
             "question": "İstiklal Marşı kaç yılında kabul olmuştur?",
-            "options": ["1923", "1921", "1938", "1920"]
+            "options": ["1923", "1921", "1938", "1920"],
+            "answer": "1921"
         }
     ]
 }
