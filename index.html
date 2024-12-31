@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soru Yarışması</title>
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        .question-card {
+            background-color: #f5f5f5;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .option {
+            background-color: #fff;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .option:hover {
+            background-color: #e0e0e0;
+        }
+
+        .timer {
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .score {
+            text-align: right;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .share-btn {
+            background-color: #1DA1F2;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+
+        .share-btn:hover {
+            background-color: #1a91da;
+        }
+
+        #capture-area {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+    </style>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="timer" id="timer">20</div>
+        <div id="quiz-container">
+            <div class="question-card">
+                <h2 id="question"></h2>
+                <div class="options" id="options"></div>
+            </div>
+        </div>
+        
+        <div id="result-container" style="display: none; text-align: center;">
+            <div id="capture-area">
+                <h1>Soru Yarışması Sonucum</h1>
+                <h2>Toplam Doğru Sayım: <span id="correct-answers">0</span>/12</h2>
+                <h3 id="message" style="color: #2c3e50; margin: 20px 0;"></h3>
+            </div>
+            <div class="button-group" style="margin-top: 20px;">
+                <button onclick="shareOnTwitter()" class="share-btn">Twitter'da Paylaş</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Oyun başlangıcında kontrol ekleyelim
+        if (localStorage.getItem('hasPlayed')) {
+            document.getElementById('quiz-container').style.display = 'none';
+            document.getElementById('timer').style.display = 'none';
+            document.body.innerHTML = `
+                <div class="container" style="text-align: center; padding: 50px;">
+                    <h2>Bu testi daha önce çözdünüz!</h2>
+                    <p>Her kullanıcı testi sadece bir kez çözebilir.</p>
+                </div>
+            `;
+        }
+
+        let questions = [];
+        let currentQuestion = 0;
+        let timer;
+        let timeLeft = 20;
+        let score = 0;
+        let correctAnswers = 0;
+
+        // Soruları JSON dosyasından yükle
+        fetch('questions.json')
+            .then(response => response.json())
+            .then(data => {
+                questions = data.questions;
+                showQuestion();
+                startTimer();
+            });
+
+        function showQuestion() {
+            if (currentQuestion >= questions.length) {
+                endGame();
+                return;
+            }
+
+            const question = questions[currentQuestion];
+            document.getElementById('question').textContent = question.question;
+            
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach(option => {
+                const button = document.createElement('div');
+                button.className = 'option';
+                button.textContent = option;
+                button.onclick = () => checkAnswer(option);
+                optionsContainer.appendChild(button);
+            });
+
+            timeLeft = 20;
+        }
+
+        function startTimer() {
+            clearInterval(timer);
+            timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').textContent = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    nextQuestion();
+                }
+            }, 1000);
+        }
+
+        function checkAnswer(selectedOption) {
+            const correctAnswer = questions[currentQuestion].answer;
+            if (selectedOption === correctAnswer) {
+                score += timeLeft;
+                correctAnswers++;
+            }
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            showQuestion();
+            startTimer();
+        }
+
+        function getResultMessage(correctCount) {
+            if (correctCount <= 4) {
+                return "Kanka sen twitter kullanmayı bırak, evden dahi dışarı çıkma 😅";
+            } else if (correctCount <= 7) {
+                return "Kankam, sen twitter kullanma ya 😬";
+            } else if (correctCount <= 10) {
+                return "Kankam twitterda dolaş ama azıcık da kitap oku 📚";
+            } else {
+                return "Gardaşım, twitterı gönül rahatlığıyla kullanabilirsin 🎉";
+            }
+        }
+
+        function endGame() {
+            clearInterval(timer);
+            document.getElementById('quiz-container').style.display = 'none';
+            document.getElementById('timer').style.display = 'none';
+            document.getElementById('result-container').style.display = 'block';
+            document.getElementById('correct-answers').textContent = correctAnswers;
+            
+            // Sonuç mesajını göster
+            const message = getResultMessage(correctAnswers);
+            document.getElementById('message').textContent = message;
+
+            // Oyunu oynadığını kaydet
+            localStorage.setItem('hasPlayed', 'true');
+        }
+
+        function shareOnTwitter() {
+            html2canvas(document.getElementById('capture-area')).then(function(canvas) {
+                // Canvas'ı base64 formatına çevir
+                const image = canvas.toDataURL('image/png');
+                
+                // Yeni bir sekme aç ve resmi göster
+                const newTab = window.open();
+                newTab.document.body.innerHTML = `
+                    <img src="${image}" alt="Quiz Result">
+                    <p>Resmi kaydedin ve Twitter'da paylaşabilirsiniz!</p>
+                `;
+
+                // Twitter paylaşım linki
+                const tweetText = `Soru yarışmasında ${correctAnswers} doğru yaptım! Siz de test edin: https://fsk.github.io/twitter-kullanma-testi`;
+                const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+                
+                // Twitter paylaşım sayfasını aç
+                window.open(twitterUrl, '_blank');
+            });
+        }
+    </script>
+</body>
+</html>
